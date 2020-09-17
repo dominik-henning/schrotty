@@ -33,4 +33,4 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           push: true
-          tags: 808489840142.dkr.ecr.eu-central-1.amazonaws.com/schrotty:latest
+          tags: 808489840142.dkr.ecr.eu-central-1.amazonaws.com/schrotty:${{ github.sha }}
