@@ -11,8 +11,11 @@ jobs:
     env:
       HASH: $(git rev-parse --short "$GITHUB_SHA")
       BRANCH: ${GITHUB_REF##*/}
-      SERVICE_NAME: schrotty
+      SERVICE_NAME: ${{ secrets.SERVICE_NAME }}
       PROJECT_ID: ${{ secrets.GOOGLE_PROJECT_ID }}
+      CLUSTER_NAME: ${{ secrets.CLUSTER_NAME }}
+      CLUSTER_ZONE: ${{ secrets.CLUSTER_ZONE }}
+      DEPLOYMENT_NAME: ${{ secrets.DEPLOYMENT_NAME }}
 
     steps:
       - name: Checkout
@@ -32,7 +35,20 @@ jobs:
       # Configure docker to use the gcloud command-line tool as a credential helper
       - run: |
           gcloud auth configure-docker -q
+      - run: |-
+          gcloud container clusters get-credentials "$CLUSTER_NAME" --zone "$CLUSTER_ZONE"          
       # Push image to Google Container Registry
       - name: Build
         run: |-
           docker push eu.gcr.io/$PROJECT_ID/$SERVICE_NAME:$GITHUB_SHA
+      # Set up kustomize
+      - uses: imranismail/setup-kustomize@v1
+        with:
+          kustomize-version: "3.1.0"
+      # Deploy the Docker image to the GKE cluster
+      - name: Deploy
+        run: |-
+          kustomize edit set image eu.gcr.io/PROJECT_ID/IMAGE:TAG=eu.gcr.io/$PROJECT_ID/$SERVICE_NAME:$GITHUB_SHA
+          kustomize build . | kubectl apply -f -
+          kubectl rollout status deployment/$DEPLOYMENT_NAME
+          kubectl get services -o wide
