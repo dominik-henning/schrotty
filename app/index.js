@@ -1,11 +1,20 @@
 const http = require('http');
+const fs = require('fs');
+const path = require('path');
 
 const port = 8080;
 
 const server = http.createServer((req, res) => {
-  res.statusCode = 200;
-  res.setHeader('Content-Type', 'text/plain');
-  res.end('Hello Alexandra');
+  var filePath = path.join(__dirname, 'index.html');
+  var stat = fs.statSync(filePath);
+
+  res.writeHead(200, {
+      'Content-Type': 'text/html',
+      'Content-Length': stat.size
+  });
+
+  var readStream = fs.createReadStream(filePath);
+  readStream.pipe(res);
 });
 
 server.listen(port, () => {
