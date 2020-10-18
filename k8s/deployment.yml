@@ -1,7 +1,7 @@
 apiVersion: apps/v1beta1
 kind: Deployment
 metadata:
-  name: schrotty
+  name: shoppy
 spec:
   replicas: 1
   strategy:
@@ -12,10 +12,10 @@ spec:
   template:
     metadata:
       labels:
-        app: schrotty
+        app: shoppy
     spec:
       containers:
-      - name: schrotty
+      - name: shoppy
         image: eu.gcr.io/PROJECT_ID/IMAGE:TAG
         ports:
         - containerPort: 8080
